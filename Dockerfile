@@ -10,9 +10,9 @@ ENV STAGING_KEY=RANDOM DEBIAN_FRONTEND=noninteractive DOTNET_CLI_TELEMETRY_OPTOU
 SHELL ["/bin/bash", "-c"]
 RUN wget -q https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
-    apt update && \
-    apt install -qq -y \
-    --no-install-recommends \
+    # apt update && \
+    # apt install -qq -y \
+    # --no-install-recommends \
     apt-transport-https \
     dotnet-sdk-6.0 \
     libicu-dev \
