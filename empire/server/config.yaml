@@ -39,12 +39,6 @@ database:
     # an IP black list to reject accept clients from
     #   format is "192.168.1.1,192.168.1.10-192.168.1.100,10.0.0.0/8"
     ip-blacklist: ""
-starkiller:
-  repo: https://github.com/BC-SECURITY/Starkiller.git
-  directory: empire/server/api/v2/starkiller
-  # Can be a branch, tag, or commit hash
-  ref: v2.5.3
-  auto_update: true
 plugins:
   # Auto-load plugin with defined settings
   csharpserver:
