@@ -6,21 +6,9 @@ servers:
     host: http://localhost
     port: 1337
     socketport: 5000
-    username: empireadmin
+    username: admin
     password: password123
     autoconnect: true
-  other-server:
-    host: http://localhost
-    port: 1337
-    socketport: 5000
-    username: empireadmin
-    password: password123
-  another-one:
-    host: http://localhost
-    port: 1337
-    socketport: 5000
-    username: empireadmin
-    password: password123
 shortcuts:
   # Params can be a list like
   # params:
