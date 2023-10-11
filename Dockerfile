@@ -11,7 +11,7 @@ SHELL ["/bin/bash", "-c"]
 RUN wget -q https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt update && \
-    apt install -qq \
+    apt install -qq -y \
     --no-install-recommends \
     apt-transport-https \
     dotnet-sdk-6.0 \
