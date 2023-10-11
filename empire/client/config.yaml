@@ -6,7 +6,7 @@ servers:
     host: http://localhost
     port: 1337
     socketport: 5000
-    username: admin
+    username: empireadmin
     password: password123
     autoconnect: true
 shortcuts:
