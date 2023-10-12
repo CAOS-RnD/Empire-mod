@@ -1,5 +1,5 @@
 # image base
-FROM python:bookworm
+FROM python:3.11-bookworm-slim
 RUN apt update && apt upgrade -y
 RUN pip install --upgrade pip
 
