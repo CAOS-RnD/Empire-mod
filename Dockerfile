@@ -4,6 +4,7 @@ RUN apt update && apt upgrade -y
 RUN  apt update \
   && apt upgrade -y \
   && apt install -y wget \
+  && apt install build-essential -y \
   && rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
 
