@@ -50,3 +50,4 @@ addons/
 __pycache__/
 workspace.xml
 starkiller-dist.tar.gz
+poetry.exe

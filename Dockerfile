@@ -1,6 +1,10 @@
 # image base
 FROM python:3.11-slim-bookworm
 RUN apt update && apt upgrade -y
+RUN  apt update \
+  && apt upgrade -y \
+  && apt install -y wget \
+  && rm -rf /var/lib/apt/lists/*
 RUN pip install --upgrade pip
 
 # env setup
