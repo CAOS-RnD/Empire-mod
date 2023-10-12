@@ -1,5 +1,5 @@
 # image base
-FROM python:3.11-bullseye
+FROM python:bookworm
 RUN apt update && apt upgrade -y
 RUN pip install --upgrade pip
 
