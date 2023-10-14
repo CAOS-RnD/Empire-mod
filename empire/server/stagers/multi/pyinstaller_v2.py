@@ -99,7 +99,7 @@ class Stager(object):
 
         # generate the launcher code
         launcher = self.mainMenu.stagers.generate_launcher(
-            listener_name=listener_name,
+            listenerName=listener_name,
             language=language,
             encode=encode,
             userAgent=user_agent,
