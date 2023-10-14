@@ -157,7 +157,7 @@ class Listener(object):
             "Name": {
                 "Description": "Name for the listener.",
                 "Required": True,
-                "Value": "httpv2",
+                "Value": "http_v2",
             },
             "Host": {
                 "Description": "Hostname/IP for staging.",
