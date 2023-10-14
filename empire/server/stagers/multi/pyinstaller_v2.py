@@ -103,7 +103,7 @@ class Stager(object):
             language=language,
             encode=encode,
             userAgent=user_agent,
-            safe_checks=safe_checks,
+            safeChecks=safe_checks,
         )
         if launcher == "":
             log.error("Error in launcher command generation.")
