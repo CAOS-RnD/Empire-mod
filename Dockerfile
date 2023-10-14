@@ -1,5 +1,5 @@
 # image base
-FROM python:3.11-bookworm
+FROM python:3.10-bookworm
 RUN apt update && apt upgrade -y
 RUN  apt update \
   && apt upgrade -y \
