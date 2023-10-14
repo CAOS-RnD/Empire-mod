@@ -30,7 +30,8 @@ class LauncherGen(object):
         self.funcs = funcs
         # sourcery skip: low-code-quality
         self.imports = '''
-import os, sys, re, subprocess, urllib.request'''
+import os, sys, re, subprocess, urllib.request
+'''
 
         self.static = '''
 class Dnull:
@@ -56,7 +57,8 @@ def f(d, e):
         b = (b + a[i]) % 256
         a[i], a[b] = a[b], a[i]
         c.append(chr(char ^ a[(a[i] + a[b]) % 256]))
-    return c''')
+    return c
+''')
 
         self.ssl_ignore = '''
 import ssl
