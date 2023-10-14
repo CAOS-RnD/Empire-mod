@@ -208,7 +208,8 @@ class Listener(object):
                 "Value": 60,
             },
             "DefaultProfile": {
-                "Description": "Default comm profile for the agent. Endpoints | User agent | Headers (key:value), comma divided",
+                "Description": "Default comm profile for the agent. Endpoints | User agent | Headers (key:value), "
+                               "comma divided",
                 "Required": True,
                 "Value": "/v1/auth/token,/signin|Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101",
             },
