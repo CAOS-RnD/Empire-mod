@@ -135,26 +135,12 @@ class Stager(object):
         # )
         log.info(f"Created {binary_file_str}.py")
         import secrets
-        log.info([
-            'pyinstaller',
-            f'{binary_file_str}.py',
-            '--onefile',
-            '--clean',
-            '--noupx',
-            '--noconsole',
-            f'--key {secrets.token_hex(8)}',
-            '--specpath',
-            os.path.dirname(binary_file_str),
-            '--distpath',
-            os.path.dirname(binary_file_str),
-            '--workpath',
-            f"/tmp/{str(time.time())}-build/"
-        ])
         subprocess.run(
             [
                 'pyinstaller',
                 f'{binary_file_str}.py',
-                '--onefile',
+                '-y',
+                '-F',
                 '--clean',
                 '--noupx',
                 '--noconsole',
