@@ -177,8 +177,8 @@ class Listener(object):
             "ListenerBuild": {
                 "Description": "Destination OS for launcher.",
                 "Required": True,
-                "Value": "Win",
-                "SuggestedValues": ["Win", "Unix", "MacOs"],
+                "Value": "Windows",
+                "SuggestedValues": ["Windows", "Unix"],
             },
             "StagingKey": {
                 "Description": "Staging key for initial agent negotiation.",

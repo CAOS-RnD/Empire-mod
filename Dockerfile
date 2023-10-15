@@ -65,7 +65,7 @@ RUN wineboot --restart
 RUN cd /wine/python \
     && wine python --version \
     && wine python get-pip.py \
-    && wine pip install pyinstaller pyarmor tinyaes
+    && wine pip install pyinstaller==5.13.2 pyarmor tinyaes
 
 ENTRYPOINT ["./ps-empire"]
 CMD ["server"]

