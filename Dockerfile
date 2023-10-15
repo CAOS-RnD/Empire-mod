@@ -1,7 +1,7 @@
-FROM python:3.10-bookworm
+FROM python:3.11-bookworm
 
-ENV STAGING_KEY=RANDOM DEBIAN_FRONTEND=noninteractive DOTNET_CLI_TELEMETRY_OPTOUT=1
-ARG PYTHON_VERSION=3.10.11
+ENV STAGING_KEY=RANDOM DEBIAN_FRONTEND=noninteractive DOTNET_CLI_TELEMETRY_OPTOUT=1 PYTHONOPTIMIZE=1
+ARG WINE_PYTHON_VERSION=3.11.6
 RUN dpkg --add-architecture i386
 
 RUN  apt update \
@@ -48,13 +48,13 @@ RUN rm -rf /empire/empire/server/data/empire*
 
 RUN mkdir -p /wine/python
 RUN cd /wine/python \
-    && wget -q https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-embed-win32.zip \
+    && wget -q https://www.python.org/ftp/python/${WINE_PYTHON_VERSION}/python-${WINE_PYTHON_VERSION}-embed-win32.zip \
     && unzip python-*.zip \
     && rm -f python-*.zip
 
 ENV WINEPREFIX /wine
 ENV WINEPATH Z:\\wine\\python\\Scripts;Z:\\wine\\python
-ENV PYTHONHASHSEED=123
+ENV PYTHONHASHSEED=1337
 
 RUN cd /wine/python \
   && rm python*._pth \
@@ -65,7 +65,7 @@ RUN wineboot --restart
 RUN cd /wine/python \
     && wine python --version \
     && wine python get-pip.py \
-    && wine pip install pyinstaller==5.13.2 pyarmor tinyaes
+    && wine pip install pyinstaller[encryption]==5.13.2 pyarmor
 
 ENTRYPOINT ["./ps-empire"]
 CMD ["server"]

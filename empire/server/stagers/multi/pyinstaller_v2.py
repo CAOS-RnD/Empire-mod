@@ -147,7 +147,7 @@ class Stager(object):
                    f'--distpath {os.path.dirname(binary_file_str)} '
                    f'--workpath /tmp/{str(time.time())}-build/')
         # log.warning(command)
-        subprocess.run(command, shell=True, capture_output=True, text=True)
+        subprocess.run(command, shell=True, text=True)
 
         if os.path.exists(binary_file_str):
             with open(binary_file_str, "rb") as f:
