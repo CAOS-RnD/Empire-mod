@@ -155,14 +155,13 @@ class Stager(object):
                         elif line.startswith("from "):
                             imports_list.append(line)
 
-                imports_list.append("import trace")
-                imports_list.append("import json")
+                imports_list.extend(("import trace", "import json"))
                 imports_list = list(set(imports_list))  # removing duplicate strings
                 imports_str = "\n".join(imports_list)
                 launcher = imports_str + "\n" + launcher
 
-                with open(binary_file_str + ".py", "w") as text_file:
-                    text_file.write("%s" % launcher)
+                with open(f"{binary_file_str}.py", "w") as text_file:
+                    text_file.write(f"{launcher}")
 
                 output_str = subprocess.run(
                     [
@@ -176,7 +175,7 @@ class Stager(object):
                         "--workpath",
                         "/tmp/" + str(time.time()) + "-build/",
                         "--onefile",
-                        binary_file_str + ".py",
+                        f"{binary_file_str}.py",
                     ]
                 )
 

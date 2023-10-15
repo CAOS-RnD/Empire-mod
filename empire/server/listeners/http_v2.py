@@ -174,12 +174,6 @@ class Listener(object):
                 "Value": "",
                 "SuggestedValues": ["8080", "8008"],
             },
-            "ListenerBuild": {
-                "Description": "Destination OS for launcher.",
-                "Required": True,
-                "Value": "Windows",
-                "SuggestedValues": ["Windows", "Unix"],
-            },
             "StagingKey": {
                 "Description": "Staging key for initial agent negotiation.",
                 "Required": True,
@@ -339,6 +333,7 @@ class Listener(object):
             safeChecks="",
             listenerName=None,
             bypasses: List[str] = None,
+            build_arch='win'
     ):
         """
         Generate a launcher for the specified listener.
@@ -360,7 +355,6 @@ class Listener(object):
         if not listener_options["Cookie"]["Value"]:
             listener_options["Cookie"]["Value"] = listener_util.generate_cookie()
         cookie = listener_options["Cookie"]["Value"]
-        listener_build = listener_options["ListenerBuild"]["Value"]
         obfuscation = listener_options["Obfuscation"]["Value"]
         check_debug = listener_options["CheckDebug"]["Value"]
         check_specs = listener_options["CheckSpecs"]["Value"]
@@ -390,9 +384,9 @@ class Listener(object):
             if check_debug == 'True':
                 additional_func.append(python_anti_debug_checks())
             if check_specs == 'True':
-                additional_func.append(python_specs_checks(listener_build))
+                additional_func.append(python_specs_checks(build_arch))
             if check_process and 'none' not in check_process:
-                additional_func.append(python_proc_checks(listener_build, check_process.split(',')))
+                additional_func.append(python_proc_checks(build_arch, check_process.split(',')))
 
             gen = LauncherGen(host, port, stage0, userAgent, b64_routing_packet,
                               staging_key, custom_headers, proxies, additional_func).gen()
