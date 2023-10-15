@@ -329,7 +329,6 @@ class Listener(object):
             userAgent="default",
             proxy="default",
             proxyCreds="default",
-            stagerRetries="0",
             language=None,
             safeChecks="",
             listenerName=None,
