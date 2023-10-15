@@ -13,8 +13,9 @@ RUN pip install --upgrade pip
 
 # set the def shell for ENV
 SHELL ["/bin/bash", "-c"]
-RUN wget -q https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb && \
+RUN wget -q https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb && \
     apt update && \
     apt install -qq -y \
     --no-install-recommends \
