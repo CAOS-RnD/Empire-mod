@@ -361,13 +361,14 @@ class Listener(object):
             if procs_comm := next(filter(lambda x: x.startswith('procs:'), obf_commands), None):
                 procs = procs_comm.split(':')
                 if len(procs) > 1:
-                    log.info("Adding proc fail safe code")
+                    log.info(f"Adding proc fail safe code: {procs}")
                     additional_func.append(python_proc_checks(build_arch, procs[1].split(',')))
 
             gen = LauncherGen(host, port, stage0, userAgent, b64_routing_packet,
                               staging_key, custom_headers, proxies, additional_func).gen()
 
             if obfuscate:
+                log.info("Scrambling code")
                 gen = py_obfuscate(gen)
             if not encode:
                 return gen

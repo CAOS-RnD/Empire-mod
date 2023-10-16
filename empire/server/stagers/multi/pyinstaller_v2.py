@@ -172,31 +172,34 @@ class Stager(object):
             # Obfuscation
             log.info(f"Obfuscating {binary_file_str}.py with pyarmor")
             command = f'pyarmor gen {target_platform} --output={workpath} {binary_file_str}.py'
+            log.warning(command)
             subprocess.run(command, shell=True, text=True)
 
             # Create spec
             log.info(f"Creating {binary_file_str}.py spec file")
             command = (f'pyi-makespec -F --noupx --noconsole --key {secrets.token_hex(8)} '
                        f'--hidden-import pyarmor_runtime_000000 {binary_file_str}.py')
+            log.warning(command)
             subprocess.run(command, shell=True, text=True, cwd=workpath)
 
             # Patch spec
             log.info(f"Patching {os.path.basename(binary_file_str)}.spec file")
-            patch_spec(f'{workpath}{os.path.basename(binary_file_str)}.spec')
+            patch_spec(binary_file_str, f'{workpath}{os.path.basename(binary_file_str)}.spec')
 
             # Create PyInstaller binary
             log.info(f"Packing obfuscated {binary_file_str}.py with pyinstaller")
-            command = f'{pyinstaller} {os.path.basename(binary_file_str)}.spec -y --clean'
+            command = f'{pyinstaller} {os.path.basename(binary_file_str)}.spec -y --clean --distpath {os.path.dirname(binary_file_str)}'
+            log.warning(command)
             subprocess.run(command, shell=True, text=True, cwd=workpath)
 
-            # Move bin to temp
-            if 'win' in build_arch.lower():
-                subprocess.run(
-                    f'mv {os.path.basename(binary_file_str)}.exe /tmp/{os.path.basename(binary_file_str)}.exe',
-                    shell=True, text=True, cwd=workpath)
-            else:
-                subprocess.run(f'mv {os.path.basename(binary_file_str)} /tmp/{os.path.basename(binary_file_str)}',
-                               shell=True, text=True, cwd=workpath)
+            # # Move bin to temp
+            # if 'win' in build_arch.lower():
+            #     subprocess.run(
+            #         f'mv {os.path.basename(binary_file_str)}.exe /tmp/{os.path.basename(binary_file_str)}.exe',
+            #         shell=True, text=True, cwd=workpath)
+            # else:
+            #     subprocess.run(f'mv {os.path.basename(binary_file_str)} /tmp/{os.path.basename(binary_file_str)}',
+            #                    shell=True, text=True, cwd=workpath)
         else:
             log.info(f"Packing {binary_file_str}.py with pyinstaller")
             command = (f'{pyinstaller} {binary_file_str}.py -y -F --clean --noupx --noconsole '
@@ -204,8 +207,8 @@ class Stager(object):
                        f'--specpath {os.path.dirname(binary_file_str)} '
                        f'--distpath {os.path.dirname(binary_file_str)} '
                        f'--workpath {workpath}')
+            log.warning(command)
             subprocess.run(command, shell=True, text=True)
-            subprocess.run('rm -rf /tmp/*.spec', shell=True, text=True)
         if os.path.exists(workpath):
             subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
         if 'win' in build_arch.lower():
@@ -215,17 +218,17 @@ class Stager(object):
         if os.path.exists(output):
             with open(output, "rb") as f:
                 return f.read()
+        subprocess.run('rm -rf /tmp/*.spec', shell=True, text=True)
+        subprocess.run(f'rm -rf {binary_file_str}.py', shell=True, text=True)
         log.error("Error in launcher generation.")
         return ""
 
 
-def patch_spec(spec_file):
+def patch_spec(path_src, spec_file):
     with open(spec_file, 'r') as file:
         lines = file.readlines()
     target = "pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)"
-    patch = """
-# Pyarmor patch start:
-
+    patch = f"""
 def pyarmor_patcher(src, obfdist):
     # Make sure both of them are absolute paths
     src = os.path.abspath(src)
@@ -250,9 +253,7 @@ def pyarmor_patcher(src, obfdist):
                         a.pure._code_cache[a.pure[i][0]] = compile(f.read(), a.pure[i][1], 'exec')
                 a.pure[i] = a.pure[i][0], x, a.pure[i][2]
 
-pyarmor_patcher(r'/path/to/src', r'/path/to/obfdist')
-
-# Pyarmor patch end.
+pyarmor_patcher(r'{os.path.dirname(path_src)}', r'{os.path.dirname(spec_file)}')
 """
 
     for i, line in enumerate(lines):
