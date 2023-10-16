@@ -4,7 +4,6 @@ import datetime
 import logging
 import os
 import secrets
-import time
 from builtins import object
 
 log = logging.getLogger(__name__)
@@ -167,30 +166,43 @@ class Stager(object):
             pyinstaller = 'pyinstaller'
             target_platform = '--platform linux.x86_64'
 
-        workpath = f'/tmp/{str(time.time())}-build/'
+        workpath = f'/tmp/{datetime.datetime.now().strftime("%d_%m_%Y_%H%M%S")}-build/'
+        original = f'{workpath}{os.path.basename(binary_file_str)}'
         if obfuscation:
+            command = f'mkdir {workpath}'
+            subprocess.run(command, shell=True, text=True)
+            # MV py to build folder
+            command = f'mv {binary_file_str}.py {workpath}'
+            log.warning(command)
+            subprocess.run(command, shell=True, text=True)
+
             # Obfuscation
-            log.info(f"Obfuscating {binary_file_str}.py with pyarmor")
-            command = f'pyarmor gen {target_platform} --output={workpath} {binary_file_str}.py'
+            log.info(f"Obfuscating {original}.py with pyarmor")
+            command = f'pyarmor gen {target_platform} -O {workpath}obfdist {original}.py'
+            log.warning(command)
+            subprocess.run(command, shell=True, text=True)
+
+            # MV runtime
+            command = f'mv {workpath}obfdist/pyarmor_runtime_000000 {workpath}'
             log.warning(command)
             subprocess.run(command, shell=True, text=True)
 
             # Create spec
-            log.info(f"Creating {binary_file_str}.py spec file")
+            log.info(f"Creating {original}.py spec file")
             command = (f'pyi-makespec -F --noupx --noconsole --key {secrets.token_hex(8)} '
-                       f'--hidden-import pyarmor_runtime_000000 {binary_file_str}.py')
+                       f'--hidden-import {workpath}pyarmor_runtime_000000/ --specpath {workpath} {original}.py')
             log.warning(command)
-            subprocess.run(command, shell=True, text=True, cwd=workpath)
+            subprocess.run(command, shell=True, text=True)
 
             # Patch spec
-            log.info(f"Patching {os.path.basename(binary_file_str)}.spec file")
-            patch_spec(binary_file_str, f'{workpath}{os.path.basename(binary_file_str)}.spec')
+            log.info(f"Patching {original}.spec file")
+            patch_spec(workpath, f'{workpath}obfdist/', f'{original}.spec')
 
             # Create PyInstaller binary
-            log.info(f"Packing obfuscated {binary_file_str}.py with pyinstaller")
-            command = f'{pyinstaller} {os.path.basename(binary_file_str)}.spec -y --clean --distpath {os.path.dirname(binary_file_str)}'
+            log.info(f"Packing obfuscated {original}.spec with pyinstaller")
+            command = f'{pyinstaller} -y --clean --distpath {workpath} {original}.spec'
             log.warning(command)
-            subprocess.run(command, shell=True, text=True, cwd=workpath)
+            subprocess.run(command, shell=True, text=True)
 
             # # Move bin to temp
             # if 'win' in build_arch.lower():
@@ -202,19 +214,20 @@ class Stager(object):
             #                    shell=True, text=True, cwd=workpath)
         else:
             log.info(f"Packing {binary_file_str}.py with pyinstaller")
-            command = (f'{pyinstaller} {binary_file_str}.py -y -F --clean --noupx --noconsole '
+            command = (f'{pyinstaller} -y -F --clean --noupx --noconsole '
                        f'--key {secrets.token_hex(8)} '
                        f'--specpath {os.path.dirname(binary_file_str)} '
                        f'--distpath {os.path.dirname(binary_file_str)} '
-                       f'--workpath {workpath}')
+                       f'--workpath {workpath} '
+                       f'{binary_file_str}.py')
             log.warning(command)
             subprocess.run(command, shell=True, text=True)
-        if os.path.exists(workpath):
-            subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
+        # if os.path.exists(workpath):
+        #     subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
         if 'win' in build_arch.lower():
-            output = f'{binary_file_str}.exe'
+            output = f'{original}.exe'
         else:
-            output = binary_file_str
+            output = original
         if os.path.exists(output):
             with open(output, "rb") as f:
                 return f.read()
@@ -224,7 +237,7 @@ class Stager(object):
         return ""
 
 
-def patch_spec(path_src, spec_file):
+def patch_spec(path_src, obf_src, spec_file):
     with open(spec_file, 'r') as file:
         lines = file.readlines()
     target = "pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)"
@@ -253,7 +266,7 @@ def pyarmor_patcher(src, obfdist):
                         a.pure._code_cache[a.pure[i][0]] = compile(f.read(), a.pure[i][1], 'exec')
                 a.pure[i] = a.pure[i][0], x, a.pure[i][2]
 
-pyarmor_patcher(r'{os.path.dirname(path_src)}', r'{os.path.dirname(spec_file)}')
+pyarmor_patcher(r'{path_src}', r'{obf_src}')
 """
 
     for i, line in enumerate(lines):
