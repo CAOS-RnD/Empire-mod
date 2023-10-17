@@ -7,7 +7,9 @@ import sys
 if platform.python_implementation() == 'IronPython':
     from System import Environment
     from System.Diagnostics import Process
-    from System.Security.Principal import WindowsBuiltInRole, WindowsIdentity, WindowsPrincipal
+    from System.Security.Principal import WindowsBuiltInRole
+    from System.Security.Principal import WindowsIdentity
+    from System.Security.Principal import WindowsPrincipal
 else:
     import pwd
 

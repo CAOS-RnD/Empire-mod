@@ -234,8 +234,8 @@ class Stager(object):
                        f'{original}.py')
         log.warning(command)
         subprocess.run(command, shell=True, text=True)
-        if os.path.exists(workpath):
-            subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
+        # if os.path.exists(workpath):
+        #     subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
         output = f'{original}.exe' if 'win' in build_arch.lower() else original
         if os.path.exists(output):
             with open(output, "rb") as f:

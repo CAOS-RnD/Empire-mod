@@ -114,6 +114,8 @@ class Stagers(object):
                     listenerName=listenerName,
                     safeChecks=safeChecks,
                     bypasses=bypasses_parsed,
+                    build_arch=build_arch,
+                    extra=extra,
             ):
                 return launcher_code
 
