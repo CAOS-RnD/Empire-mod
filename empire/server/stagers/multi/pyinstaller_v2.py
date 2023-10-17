@@ -160,7 +160,7 @@ class Stager(object):
         if 'win' in build_arch.lower():
             log.info(f"Packing {binary_file_str}.py to exe file")
             pyinstaller = 'wine pyinstaller'
-            target_platform = '--platform windows.x86_64'
+            target_platform = '--platform windows.x86'
         else:
             log.info(f"Packing {binary_file_str}.py to bin file")
             pyinstaller = 'pyinstaller'
@@ -190,9 +190,9 @@ class Stager(object):
             # Create spec
             log.info(f"Creating {original}.py spec file")
             command = (f'pyi-makespec -F --noupx --noconsole --key {secrets.token_hex(8)} '
-                       f'--hidden-import {workpath}pyarmor_runtime_000000/ --specpath {workpath} {original}.py')
+                       f'--hidden-import pyarmor_runtime_000000 {os.path.basename(binary_file_str)}.py')
             log.warning(command)
-            subprocess.run(command, shell=True, text=True)
+            subprocess.run(command, shell=True, text=True, cwd=workpath)
 
             # Patch spec
             log.info(f"Patching {original}.spec file")
@@ -201,17 +201,6 @@ class Stager(object):
             # Create PyInstaller binary
             log.info(f"Packing obfuscated {original}.spec with pyinstaller")
             command = f'{pyinstaller} -y --clean --distpath {workpath} {original}.spec'
-            log.warning(command)
-            subprocess.run(command, shell=True, text=True)
-
-            # # Move bin to temp
-            # if 'win' in build_arch.lower():
-            #     subprocess.run(
-            #         f'mv {os.path.basename(binary_file_str)}.exe /tmp/{os.path.basename(binary_file_str)}.exe',
-            #         shell=True, text=True, cwd=workpath)
-            # else:
-            #     subprocess.run(f'mv {os.path.basename(binary_file_str)} /tmp/{os.path.basename(binary_file_str)}',
-            #                    shell=True, text=True, cwd=workpath)
         else:
             log.info(f"Packing {binary_file_str}.py with pyinstaller")
             command = (f'{pyinstaller} -y -F --clean --noupx --noconsole '
@@ -220,14 +209,11 @@ class Stager(object):
                        f'--distpath {os.path.dirname(binary_file_str)} '
                        f'--workpath {workpath} '
                        f'{binary_file_str}.py')
-            log.warning(command)
-            subprocess.run(command, shell=True, text=True)
+        log.warning(command)
+        subprocess.run(command, shell=True, text=True)
         # if os.path.exists(workpath):
         #     subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
-        if 'win' in build_arch.lower():
-            output = f'{original}.exe'
-        else:
-            output = original
+        output = f'{original}.exe' if 'win' in build_arch.lower() else original
         if os.path.exists(output):
             with open(output, "rb") as f:
                 return f.read()
