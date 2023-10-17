@@ -3,6 +3,7 @@ from __future__ import print_function
 import datetime
 import logging
 import os
+import re
 import secrets
 from builtins import object
 
@@ -136,6 +137,26 @@ class Stager(object):
             log.error("pyInstaller is not installed")
             log.error("Try: apt install python-pip && pip install pyarmor")
             return ""
+        active_listener = self.mainMenu.listenersv2.get_active_listener_by_name(
+            listener_name
+        )
+        a_code = active_listener.generate_agent(
+            active_listener.options, language=language
+        )
+        c_code = active_listener.generate_comms(
+            active_listener.options, language=language
+        )
+        s_code = active_listener.generate_stager(
+            active_listener.options,
+            language=language,
+            encrypt=False,
+            encode=False,
+        )
+        import_pattern = r'import\s+\S+|from\s+\S+\s+import\s+\S+'
+        import_list = re.findall(import_pattern, a_code + c_code + s_code)
+        import_list = {import_statement.strip() for import_statement in import_list}
+        from_list = [x for x in import_list if x.startswith('from')]
+        import_list = [x.split(' ')[1] for x in import_list if x.startswith('import')]
 
         launcher = self.mainMenu.stagers.generate_launcher(
             listenerName=listener_name,
@@ -145,7 +166,8 @@ class Stager(object):
             safeChecks=safe_checks,
             obfuscate=obfuscation,
             obfuscation_command='|'.join(obfuscation_command),
-            build_arch=build_arch
+            build_arch=build_arch,
+            extra={'from_list': from_list, 'import_list': import_list}
         )
 
         if launcher == "":
@@ -168,14 +190,15 @@ class Stager(object):
 
         workpath = f'/tmp/{datetime.datetime.now().strftime("%d_%m_%Y_%H%M%S")}-build/'
         original = f'{workpath}{os.path.basename(binary_file_str)}'
-        if obfuscation:
-            command = f'mkdir {workpath}'
-            subprocess.run(command, shell=True, text=True)
-            # MV py to build folder
-            command = f'mv {binary_file_str}.py {workpath}'
-            log.warning(command)
-            subprocess.run(command, shell=True, text=True)
 
+        command = f'mkdir {workpath}'
+        subprocess.run(command, shell=True, text=True)
+        # MV py to build folder
+        command = f'mv {binary_file_str}.py {workpath}'
+        log.warning(command)
+        subprocess.run(command, shell=True, text=True)
+
+        if obfuscation:
             # Obfuscation
             log.info(f"Obfuscating {original}.py with pyarmor")
             command = f'pyarmor gen {target_platform} -O {workpath}obfdist {original}.py'
@@ -205,20 +228,18 @@ class Stager(object):
             log.info(f"Packing {binary_file_str}.py with pyinstaller")
             command = (f'{pyinstaller} -y -F --clean --noupx --noconsole '
                        f'--key {secrets.token_hex(8)} '
-                       f'--specpath {os.path.dirname(binary_file_str)} '
-                       f'--distpath {os.path.dirname(binary_file_str)} '
+                       f'--specpath {workpath} '
+                       f'--distpath {workpath} '
                        f'--workpath {workpath} '
-                       f'{binary_file_str}.py')
+                       f'{original}.py')
         log.warning(command)
         subprocess.run(command, shell=True, text=True)
-        # if os.path.exists(workpath):
-        #     subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
+        if os.path.exists(workpath):
+            subprocess.run(f'rm -rf {workpath}', shell=True, text=True)
         output = f'{original}.exe' if 'win' in build_arch.lower() else original
         if os.path.exists(output):
             with open(output, "rb") as f:
                 return f.read()
-        subprocess.run('rm -rf /tmp/*.spec', shell=True, text=True)
-        subprocess.run(f'rm -rf {binary_file_str}.py', shell=True, text=True)
         log.error("Error in launcher generation.")
         return ""
 

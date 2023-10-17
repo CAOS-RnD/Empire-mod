@@ -170,7 +170,7 @@ def py_obfuscate(cc):
     code = re.sub(r"^(import .*)", r"\1" + ', base64', code, flags=re.MULTILINE)
     replace_placeholder = r"('|\")" + placeholder + r"('|\")"
     for original in originals:
-        original = original.replace("'", "").replace('"', '')
+        original = original[1:-1]
         if original and not original.startswith("\\") and not original.lower().startswith("utf-8"):
             key = base64.b64encode(secrets.token_bytes(8)).decode("utf-8")
             encoded = base64.b64encode(hide(original.encode('utf-8'), base64.b64decode(key))).decode('utf-8')

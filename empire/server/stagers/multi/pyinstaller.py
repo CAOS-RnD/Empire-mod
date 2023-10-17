@@ -132,7 +132,6 @@ class Stager(object):
                 comms_code = active_listener.generate_comms(
                     active_listener.options, language=language
                 )
-
                 stager_code = active_listener.generate_stager(
                     active_listener.options,
                     language=language,
